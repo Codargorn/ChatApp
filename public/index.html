@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Notices</title>
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="/css/fontawesome-free-5.15.3-web/css/all.css" rel="stylesheet">
+    <meta name="color-scheme" content="dark">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<div class="app container">
+    <div class="content" style ="display: none">
+        <button class="signout btn btn-dark" style="top: 5px; right: 20px; position: absolute">Log out</button>
+        <div class="chat-app"></div>
+    </div>
+</div>
+
+<script type="module">
+    import FrameComponent from "./app/components/frame.js";
+    import UserComponent from "./app/components/user.js";
+    import UserListComponent from "./app/components/userlist.js";
+    import MessageComponent from "./app/components/message.js";
+    import MessageListComponent from "./app/components/messagelist.js";
+    import LoginComponent from "./app/components/login.js";
+    import LogoutComponent from "./app/components/logout.js";
+
+    let currentUserId = null;
+    let selectedReceiverId = null;
+
+
+    document.addEventListener('app-mounted', e => {
+        const user1 = new UserComponent.User(10,'John');
+        const user2 = new UserComponent.User(11, 'Eric');
+        const user3 = new UserComponent.User(12, 'Bill');
+        const user4 = new UserComponent.User(13, 'Curt');
+
+        const list = [user1,user2,user3,user4]
+        const userList = new UserListComponent.UserList(list)
+
+        const message1 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
+        ,1,3)
+        const message2 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
+            ,3,1)
+        const message3 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
+            ,1,3)
+        const message4 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
+            ,3,1)
+
+        const list2 = [message1,message2,message3,message4]
+        const messageList = new MessageListComponent.MessageList(list2);
+
+        UserListComponent.mount(e.detail.app.querySelector('.contacts-box'),userList)
+        MessageListComponent.mount(e.detail.app.querySelector('.chat-box'),messageList);
+        console.log(e.detail.app)
+
+    });
+
+    document.addEventListener('user-logged-in', e => {
+        currentUserId = e.detail;
+    });
+
+
+    document.addEventListener('user-selected', e => {
+        fetch(`/api/messages.php?sender_id=${currentUserId}&receiver_id=${e.detail}`)
+    });
+
+
+    FrameComponent.mount(document.querySelector('.chat-app'))
+    LoginComponent.mount(document.querySelector('.app'));
+    LogoutComponent.mount(document.querySelector('.app'));
+
+
+
+   //  import App from "./app.js";
+
+   // new App(document.querySelector('.app'));
+
+
+
+
+</script>
+</body>
+</html>

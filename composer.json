@@ -1,0 +1,23 @@
+{
+    "name": "herzog/notes",
+    "description": "Notes App Api",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Tobias Herzog",
+            "email": "tobias.herzog@tag24.de"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "fig/http-message-util": "1.1.5",
+        "ext-json": "*",
+      "ext-pdo": "*"
+    },
+    "autoload": {
+        "psr-4": {"ChatApi\\" : "source/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"ChatApi\\" : "source/"}
+    }
+}
