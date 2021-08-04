@@ -68,6 +68,7 @@ final class MessagesRepository
         return array_map(
             static function (array $record) {
                 return new Message(
+                    (int)$record['id'],
                     $record['text'],
                     new DateTime($record['created_at']),
                     (int)$record['sender_id'],
@@ -105,8 +106,8 @@ final class MessagesRepository
         if (!$record) {
             throw new \LogicException('no message found');
         }
-
         return new Message(
+            (int)$record['id'],
             $record['text'],
             new DateTime($record['created_at']),
             (int)$record['sender_id'],

@@ -52,6 +52,7 @@ if ($request->getMethod() === 'GET') {
             json_encode(array_map(
                 static function (Message $message): array {
                     return [
+                        'id' => $message->getId(),
                         'text' => $message->getText(),
                         'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
                         'sender_id' => $message->getSenderId(),

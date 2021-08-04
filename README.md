@@ -1,4 +1,7 @@
 # Chat
+Chat funktioniert,
+Code noch nicht optimiert oder getestet
+
 
 Ports
 ```

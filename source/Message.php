@@ -11,6 +11,9 @@ use DateTime;
  */
 final class Message
 {
+    /**@var int */
+    private $id;
+
     /** @var string */
     private $text;
 
@@ -23,18 +26,19 @@ final class Message
     /** @var int */
     private $receiverId;
 
-    /**@var int */
-    private $id;
+
 
     /**
-     * Note constructor.
+     * Message constructor.
+     * @param int $id
      * @param string $text
      * @param DateTime $createdAt
      * @param int $senderId
      * @param int $receiverId
      */
-    public function __construct(string $text, DateTime $createdAt, int $senderId, int $receiverId)
+    public function __construct(int $id, string $text, DateTime $createdAt, int $senderId, int $receiverId)
     {
+        $this->id = $id;
         $this->text = $text;
         $this->createdAt = $createdAt;
         $this->senderId = $senderId;
@@ -71,6 +75,14 @@ final class Message
     public function getReceiverId(): int
     {
         return $this->receiverId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
     }
 
 

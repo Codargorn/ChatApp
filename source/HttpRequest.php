@@ -2,11 +2,15 @@
 
 namespace ChatApi;
 
+
+
+use ChatApi\Contracts\RepresentsRequest;
+
 /**
  * Class HttpRequest
  * @package ChatApi
  */
-final class HttpRequest
+final class HttpRequest implements RepresentsRequest
 {
     public function getMethod(): string
     {

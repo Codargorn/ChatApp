@@ -1,7 +1,8 @@
 import {createElementFromHTML} from "../html.js";
 
 class Message {
-    constructor(text, senderId, receiverId,createdAt = new Date()) {
+    constructor(id, text, senderId, receiverId,createdAt = new Date()) {
+        this.id = id;
         this.text = text;
         this.senderId = senderId;
         this.receiverId = receiverId;
@@ -9,6 +10,7 @@ class Message {
 
         this.messageList = null;
     }
+
     addTo(messageList) {
         messageList.add(this);
     }
@@ -46,7 +48,7 @@ else
 {
     $message = createElementFromHTML(senderTemplate);
 }
-
+    $message.setAttribute('data-message-id', message.id);
     $message.querySelector('.message-text').innerHTML = message.text;
     $message.querySelector('.time').innerHTML = createTimeString(message);
 

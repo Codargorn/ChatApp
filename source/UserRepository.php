@@ -2,6 +2,7 @@
 
 namespace ChatApi;
 
+use ChatApi\Contracts\ProvidesUsers;
 use LogicException;
 use PDO;
 use RuntimeException;
@@ -10,7 +11,7 @@ use RuntimeException;
  * Class UserRepository
  * @package ChatApi
  */
-final class UserRepository
+final class UserRepository implements ProvidesUsers
 {
     /** @var PDO */
     private $pdo;

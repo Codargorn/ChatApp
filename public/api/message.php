@@ -63,6 +63,7 @@ try {
     $ReceiverId = (int)$request->getPostParams()['receiver_id'];
 
     $message = new Message(
+        0,
         $text,
         new DateTime(),
         $SenderId,

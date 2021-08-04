@@ -32,7 +32,8 @@ function mount($element, user) {
 
     $user.querySelector('.name').innerHTML = user.name;
     $user.setAttribute('data-user-id', user.id);
-    $user.addEventListener('click', e => {
+    $user.addEventListener('click', _=> {
+
         document.querySelector('.chat-box').innerHTML = "";
         const itemList = document.querySelectorAll('.list-group-item')
 
@@ -45,6 +46,10 @@ function mount($element, user) {
         $user.classList.add('active')
         $user.classList.add('disabled')
         document.dispatchEvent(new CustomEvent('user-selected', {
+            detail: $user.getAttribute('data-user-id')
+        }))
+
+        document.dispatchEvent(new CustomEvent('start-stream', {
             detail: $user.getAttribute('data-user-id')
         }))
     });

@@ -4,6 +4,9 @@
 namespace ChatApi;
 
 
+use ChatApi\Contracts\ProvidesUsers;
+
+use ChatApi\Contracts\RepresentsRequest;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
 
@@ -13,24 +16,33 @@ use JsonException;
  */
 final class RegistrationRequestHandler
 {
+
+    /** @var ProvidesUsers */
+    private $userRepository;
+
     /**
-     * @param HttpRequest $request
+     * RegistrationRequestHandler constructor.
+     * @param ProvidesUsers $userRepository
+     */
+    public function __construct(ProvidesUsers $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
+
+    /**
+     * @param RepresentsRequest $request
      * @return HttpResponse
      * @throws JsonException
      */
-    public function handle(HttpRequest $request): HttpResponse
+    public function handle(RepresentsRequest $request): HttpResponse
     {
         $email = $request->getPostParams()['email'] ?? null;
         $password = $request->getPostParams()['password'] ?? null;
         $username = $request->getPostParams()['username'] ?? null;
 
-        $settings = require __DIR__ . '/../config/database.php';
-
-        $pdo = MysqlConnection::fromConfig($settings);
-        $userRepository = new UserRepository($pdo);
-
         if ($email && !$password) {
-            if ($userRepository->existsWithEmail($email)) {
+            if ($this->userRepository->existsWithEmail($email)) {
 
                 return new HttpResponse(
                     StatusCodeInterface::STATUS_OK,
@@ -62,7 +74,7 @@ final class RegistrationRequestHandler
             );
         }
 
-        $userRepository->createNewUser($email, $password, $username);
+        $this->userRepository->createNewUser($email, $password, $username);
 
         return new HttpResponse(
             StatusCodeInterface::STATUS_OK,
@@ -72,7 +84,7 @@ final class RegistrationRequestHandler
             json_encode(
                 [
                     'success' => true,
-                    'error' => 'User stored'
+                    'message' => 'User stored'
                 ],
                 JSON_THROW_ON_ERROR
             )

@@ -25,6 +25,7 @@ function MessageList(messages = []) {
         for (let i = 0; i < list.length; i++) {
             const serializedMessage = list[i];
             const message = new MessageComponent.Message(
+                serializedMessage.id,
                 serializedMessage.text,
                 serializedMessage.sender_id,
                 serializedMessage.receiver_id,

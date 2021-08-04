@@ -54,6 +54,7 @@ function mount($element){
         submitForm.append('sender_id', localStorage.getItem('currentUserId'))
         submitForm.append('receiver_id',receiverId)
 
+        if($textInput.value.length !== 0){
         fetch('/api/message.php', {method: 'POST', body: submitForm})
             .then(response => response.json())
             .then( body => {
@@ -62,7 +63,7 @@ function mount($element){
                     $textInput.value = "";
                 }
             })
-    })
+    }});
 
     $element.appendChild($frame);
 

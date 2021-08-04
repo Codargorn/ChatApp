@@ -48,9 +48,10 @@ if ($request->getMethod() === 'GET') {
     try {
         $lastMessage = $messageRepository->lastMessages($senderId, $receiverId);
         $eventString = "event: message\n";
-        $eventString = 'id:'. $lastMessage->getSenderId()."\n";
+        $eventString = 'id:'. $lastMessage->getId()."\n";
         $eventString .= 'data: '. json_encode(
                 [
+                    'id' => $lastMessage->getId(),
                     'text' => $lastMessage->getText(),
                     'createdAt' => $lastMessage->getCreatedAt()->format('Y-m-d H:i:s'),
                     'sender_id' => $lastMessage->getSenderId(),

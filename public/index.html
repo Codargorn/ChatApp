@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Notices</title>
+    <title>Welcome to Chat 24</title>
     <link href="/css/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="/css/fontawesome-free-5.15.3-web/css/all.css" rel="stylesheet">
@@ -27,16 +27,10 @@
     import LoginComponent from "./app/components/login.js";
     import LogoutComponent from "./app/components/logout.js";
 
-    let currentUserId = null;
-    let selectedReceiverId = null;
+    let eventSourcedMessages;
 
 
-    const eventSourcedMessages = new EventSource('/api/messages_event_source.php?sender_id=1&receiver_id=3')
-    eventSourcedMessages.onmessage = function(event) {
-        console.log(event.data);
-        console.log(typeof(event.data))
-        console.log(event.data.split())
-    }
+
 
     document.addEventListener('app-mounted', e => {
 
@@ -52,8 +46,10 @@
             .then(json => {
                 const userList = new UserListComponent.UserList()
                 UserListComponent.mount(document.querySelector('.contacts-box'),userList.fromJSON(json))
-            });
+            }).catch(error => {});
     });
+
+    document.dispatchEvent(new CustomEvent('user-logged-in'));
 
 
 
@@ -69,6 +65,39 @@
                 MessageListComponent.mount(document.querySelector('.chat-box'),messageList.fromJSON(json))
             });
     });
+
+    document.addEventListener('start-stream',e =>{
+
+        if ( eventSourcedMessages instanceof EventSource)
+        {
+            eventSourcedMessages.close();
+        }
+
+        eventSourcedMessages = new EventSource(`/api/messages_event_source.php?sender_id=${localStorage.getItem('currentUserId')}&receiver_id=${e.detail}`)
+
+        eventSourcedMessages.onmessage = function(event) {
+            const serializedMessage = JSON.parse(event.data)
+
+            const lastMessage = document.querySelector(`div[data-message-id="${event.lastEventId}"]`);
+
+            if ( lastMessage)
+            {
+                return;
+            }
+
+            let message = new MessageComponent.Message(
+                serializedMessage.id,
+                serializedMessage.text,
+                serializedMessage.sender_id,
+                serializedMessage.receiver_id,
+                new Date(serializedMessage.createdAt)
+            )
+            MessageComponent.mount(document.querySelector('.chat-box'),message)
+        }
+    });
+
+
+
 
 
     FrameComponent.mount(document.querySelector('.chat-app'))
