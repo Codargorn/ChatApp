@@ -71,10 +71,46 @@ final class MessagesRepository
                     $record['text'],
                     new DateTime($record['created_at']),
                     (int)$record['sender_id'],
-                    (int)$record['receive_id']
+                    (int)$record['receiver_id']
                 );
             },
             $statement1->fetchAll(PDO::FETCH_ASSOC)
+        );
+    }
+
+    /**
+     * @param int $senderId
+     * @param int $receiverId
+     * @return Message
+     * @throws Exception
+     */
+    public function lastMessages(int $senderId, int $receiverId): Message
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT *
+                    FROM messages
+                    WHERE (sender_id = :senderId AND receiver_id = :receiverId)
+                        OR (sender_id = :receiverId AND receiver_id = :senderId)
+                    ORDER BY id DESC 
+                    LIMIT 1'
+        );
+
+        $statement->execute([
+            ':senderId' => $senderId,
+            ':receiverId' => $receiverId
+        ]);
+
+        $record = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if (!$record) {
+            throw new \LogicException('no message found');
+        }
+
+        return new Message(
+            $record['text'],
+            new DateTime($record['created_at']),
+            (int)$record['sender_id'],
+            (int)$record['receiver_id']
         );
     }
 

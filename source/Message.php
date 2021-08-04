@@ -23,6 +23,9 @@ final class Message
     /** @var int */
     private $receiverId;
 
+    /**@var int */
+    private $id;
+
     /**
      * Note constructor.
      * @param string $text

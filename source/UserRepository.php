@@ -77,4 +77,14 @@ final class UserRepository
         ]);
         return (bool)$statement->fetchColumn();
     }
+    public function getUsers(int $loggedInUserId): array
+    {
+        $statement = $this->pdo->prepare(
+            "SELECT id, username FROM users WHERE NOT id = :loggedInUserId"
+        );
+        $statement->execute([
+           'loggedInUserId' => $loggedInUserId
+        ]);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

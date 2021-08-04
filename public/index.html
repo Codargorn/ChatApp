@@ -31,40 +31,43 @@
     let selectedReceiverId = null;
 
 
+    const eventSourcedMessages = new EventSource('/api/messages_event_source.php?sender_id=1&receiver_id=3')
+    eventSourcedMessages.onmessage = function(event) {
+        console.log(event.data);
+        console.log(typeof(event.data))
+        console.log(event.data.split())
+    }
+
     document.addEventListener('app-mounted', e => {
-        const user1 = new UserComponent.User(10,'John');
-        const user2 = new UserComponent.User(11, 'Eric');
-        const user3 = new UserComponent.User(12, 'Bill');
-        const user4 = new UserComponent.User(13, 'Curt');
-
-        const list = [user1,user2,user3,user4]
-        const userList = new UserListComponent.UserList(list)
-
-        const message1 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
-        ,1,3)
-        const message2 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
-            ,3,1)
-        const message3 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
-            ,1,3)
-        const message4 = new MessageComponent.Message('Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam'
-            ,3,1)
-
-        const list2 = [message1,message2,message3,message4]
-        const messageList = new MessageListComponent.MessageList(list2);
-
-        UserListComponent.mount(e.detail.app.querySelector('.contacts-box'),userList)
-        MessageListComponent.mount(e.detail.app.querySelector('.chat-box'),messageList);
-        console.log(e.detail.app)
 
     });
 
     document.addEventListener('user-logged-in', e => {
-        currentUserId = e.detail;
+         fetch(`/api/users.php?logged_in_user_id=${localStorage.getItem('currentUserId')}`).then( response => {
+            if (response.status === 200) {
+                return  response.text();
+            }
+            throw new Error('could not fetch data');
+        })
+            .then(json => {
+                const userList = new UserListComponent.UserList()
+                UserListComponent.mount(document.querySelector('.contacts-box'),userList.fromJSON(json))
+            });
     });
 
 
+
     document.addEventListener('user-selected', e => {
-        fetch(`/api/messages.php?sender_id=${currentUserId}&receiver_id=${e.detail}`)
+        fetch(`/api/messages.php?sender_id=${localStorage.getItem('currentUserId')}&receiver_id=${e.detail}`).then( response => {
+            if (response.status === 200) {
+                return  response.text();
+            }
+            throw new Error('could not fetch data');
+        })
+            .then(json => {
+                const messageList = new MessageListComponent.MessageList()
+                MessageListComponent.mount(document.querySelector('.chat-box'),messageList.fromJSON(json))
+            });
     });
 
 

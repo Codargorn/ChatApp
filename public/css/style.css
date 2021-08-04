@@ -45,3 +45,10 @@ input::placeholder {
     color: #b1b1b1 !important;
     border: 1px solid #515151 !important;
 }
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus
+{
+    background-color: #3B3B3B !important;
+    -webkit-box-shadow: 0 0 0 30px #3B3B3B inset !important;
+}

@@ -16,6 +16,7 @@ function mount($app) {
                     $login.style.display = 'block';
 
                     $app.querySelector('.content').style.display = 'none';
+                    localStorage.clear()
 
                 }
             });

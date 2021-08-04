@@ -83,7 +83,7 @@ try {
         $password
     );
 
-    $session->set('userId', $userId);
+    $session->set('user_id', $userId);
 
     (new HttpResponder())->respond(
         new \ChatApi\HttpResponse(

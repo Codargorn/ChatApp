@@ -29,9 +29,21 @@ const template = `
 function mount($element, user) {
     const $user = createElementFromHTML(template);
 
+
     $user.querySelector('.name').innerHTML = user.name;
     $user.setAttribute('data-user-id', user.id);
-    $user.addEventListener('click', _=> {
+    $user.addEventListener('click', e => {
+        document.querySelector('.chat-box').innerHTML = "";
+        const itemList = document.querySelectorAll('.list-group-item')
+
+        itemList.forEach($listItem =>{
+            $listItem.classList.remove('active')
+            $listItem.classList.remove('disabled')
+        })
+
+
+        $user.classList.add('active')
+        $user.classList.add('disabled')
         document.dispatchEvent(new CustomEvent('user-selected', {
             detail: $user.getAttribute('data-user-id')
         }))

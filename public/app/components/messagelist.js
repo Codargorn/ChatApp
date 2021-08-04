@@ -18,7 +18,26 @@ function MessageList(messages = []) {
         message.messageList = this;
         messages.push(message);
     }
+    this.fromJSON = function (json) {
+        messages = [];
 
+        const list = JSON.parse(json);
+        for (let i = 0; i < list.length; i++) {
+            const serializedMessage = list[i];
+            const message = new MessageComponent.Message(
+                serializedMessage.text,
+                serializedMessage.sender_id,
+                serializedMessage.receiver_id,
+                new Date(serializedMessage.createdAt),
+
+            );
+            message.messageList = this;
+
+            messages.push(message);
+        }
+
+        return this;
+    }
     this.messages = function () {
         return messages;
     }

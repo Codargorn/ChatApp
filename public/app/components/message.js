@@ -14,7 +14,7 @@ class Message {
     }
 
 }
-const template =  `
+const receiverTemplate =  `
     <div class="w-50 mb-3 ml-3">
             <div class="bg-light rounded py-2 px-3 mb-2">
               <p class=" message-text text-small mb-0 text-muted"></p>
@@ -22,18 +22,35 @@ const template =  `
             <p class=" time small text-muted">12:00 PM | Aug 13</p>
       </div>`;
 
+const senderTemplate =  `
+        <div class="w-50 ml-auto mb-3">
+            <div class="bg-primary rounded py-2 px-3 mb-2">
+                <p class=" message-text text-small mb-0 text-white"></p>
+            </div>
+            <p class=" time small text-muted"></p>
+        </div>
+        `;
 /**
  * @param {HTMLElement} $element
  * @param {Message} message
  */
 function mount($element, message){
 
+let $message = "";
+if (message.senderId != localStorage.getItem('currentUserId'))
+{
+    $message = createElementFromHTML(receiverTemplate);
 
-    const $message = createElementFromHTML(template);
+}
+else
+{
+    $message = createElementFromHTML(senderTemplate);
+}
+
     $message.querySelector('.message-text').innerHTML = message.text;
     $message.querySelector('.time').innerHTML = createTimeString(message);
 
-    console.log(message.createdAt)
+
     $element.appendChild($message);
 }
 

@@ -42,8 +42,9 @@ function mount($app) {
                 if (body.success) {
                     $login.style.display = 'none';
                     $app.querySelector('.content').style.display = 'block';
+                    localStorage.setItem('currentUserId',body.user_id)
                     document.dispatchEvent(new CustomEvent('user-logged-in', {
-                        detail: body.user_id
+
                     }));
 
                    }

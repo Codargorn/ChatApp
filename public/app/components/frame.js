@@ -26,9 +26,9 @@ const template = `
       <!-- Typing area -->
       <form action="#" class="bg-light">
         <div class="input-group">
-          <input type="text" placeholder="Type a message" aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-light">
+          <input type="text" placeholder="Type a message" aria-describedby="button-submit" class=" text-input form-control rounded-0 border-0 py-4 bg-light">
           <div class="input-group-append">
-            <button id="button-addon2" class="btn btn-link"> <i class="fas fa-paper-plane"></i></button>
+            <button id="button-submit" class="btn"> <i class="fas fa-paper-plane"></i></button>
           </div>
         </div>
       </form>
@@ -40,6 +40,29 @@ const template = `
 
 function mount($element){
     const $frame = createElementFromHTML(template);
+    let receiverId = ""
+
+    document.addEventListener('user-selected',e =>{
+            receiverId = e.detail;
+
+    })
+
+    $frame.querySelector('#button-submit').addEventListener('click', _=>{
+        const submitForm = new FormData();
+        let $textInput = $frame.querySelector('.text-input')
+        submitForm.append('text', $textInput.value)
+        submitForm.append('sender_id', localStorage.getItem('currentUserId'))
+        submitForm.append('receiver_id',receiverId)
+
+        fetch('/api/message.php', {method: 'POST', body: submitForm})
+            .then(response => response.json())
+            .then( body => {
+                if(body.success){
+                    console.log('funzt');
+                    $textInput.value = "";
+                }
+            })
+    })
 
     $element.appendChild($frame);
 
