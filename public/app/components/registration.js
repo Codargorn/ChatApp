@@ -45,21 +45,25 @@ function mount($element) {
     const $signin = $registration.querySelector('.signin');
 
 
-    $emailInput.addEventListener('keypress', _ => {
-        if (!isEmailValid($emailInput)) {
-            console.log('test')
-            $emailValidate.innerHTML = 'email is not valid'
+    $emailInput.addEventListener('input', _ => {
+        if (isEmailValid($emailInput)) {
+            console.log($emailInput.value)
+            checkEmailNew($emailInput)
+                .then(body => {
+                    console.log(body.success)
+                    if (body.success) {
+
+                        $emailValidate.innerHTML = 'gute Mail'
+
+                    } else {
+                        $emailValidate.innerHTML = 'Email already exists'
+                    }
+                });
+
+
         } else {
-
-            const form = new FormData();
-            form.append('email', $emailInput.value);
-
-/*            if (isEmailNew(form)) {
-                $emailValidate.innerHTML = 'Email already exists'
-            } else {
-                $emailValidate.innerHTML = 'gute Mail'
-            }*/
-
+            console.log($emailInput.value)
+            $emailValidate.innerHTML = 'email is not valid'
         }
     })
     $password.addEventListener('keyup', _ => {
@@ -87,34 +91,38 @@ function mount($element) {
             return;
         }
 
-        /*if ( !isEmailNew(form) ){
-          return;
-        }
+        checkEmailNew($emailInput).then(body => {
+            if (body.success === false) {
+                throw new Error('email exists')
+            }
+        }).then(_ => {
+            if (!isPasswordValid($password)) {
+                throw new Error('password not valid')
+            }
+        }).then(_ => {
+            if (!doesPasswordsMatch($password, $passwordRepeat)) {
+                throw new Error('passwords do not match')
+            }
+        }).then(_ => {
+            const submitForm = new FormData();
+            submitForm.append('email', $emailInput.value);
+            submitForm.append('password', $password.value);
+            submitForm.append('username', $username.value);
+            fetch('/api/registration.php', {method: 'POST', body: submitForm})
+                .then(response => response.json())
+                .then(body => {
+                    if (body.success) {
+                        console.log('went well')
+                        window.location = "./index.html"
+                    }
 
-        if ( !isPasswordValid(form) ){
-            return;
-        }
-
-        if ( !doesPasswordsMatch(form) ){
-            return;
-        }*/
-
-        const submitForm = new FormData();
-        submitForm.append('email', $emailInput.value);
-        submitForm.append('password', $password.value);
-        submitForm.append('username', $username.value);
-        fetch('/api/registration.php', {method: 'POST', body: submitForm})
-            .then(response => response.json())
-            .then(body => {
-                if (body.success) {
-                    console.log('went well')
-                    window.location = "./index.html"
-                }
-
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }).catch(error => {
+            console.error(error);
+        });
     })
 
 
@@ -127,13 +135,9 @@ function doesPasswordsMatch($password1, $password2) {
 }
 
 function isPasswordValid($passwordInput) {
-    if ($passwordInput.value === '') {
-        return 'Password is required'
-    } else if ($passwordInput.value.length < 9) {
-        return 'Password must be at least 9 characters.'
-    } else {
-        return true
-    }
+    return $passwordInput.value.length >= 9;
+
+
 }
 
 function isEmailValid($email) {
@@ -141,14 +145,13 @@ function isEmailValid($email) {
     return $email.checkValidity()
 }
 
-// funktioniert so nicht
-function isEmailNew(form) {
 
-    fetch('/api/registration.php', {method: 'POST', body: form})
-        .then(response => response.json())
-        .then(body => {
-            return body.success
-        });
+function checkEmailNew($emailInput, callable) {
+
+    const emailForm = new FormData();
+    emailForm.append('email', $emailInput.value);
+    return fetch('/api/email.php', {method: 'POST', body: emailForm})
+        .then(response => response.json());
 }
 
 

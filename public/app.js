@@ -1,40 +1,88 @@
+import UserListComponent from "./app/components/userlist.js";
+import MessageComponent from "./app/components/message.js";
+import MessageListComponent from "./app/components/messagelist.js";
+import FrameComponent from "./app/components/frame.js";
 import LoginComponent from "./app/components/login.js";
-import NoteListComponent from "./app/components/notelist.js";
-import Store from "./app/store.js";
-import NoteEditorComponent from "./app/components/noteeditor.js";
-import Proxy from "./app/proxy.js";
 import LogoutComponent from "./app/components/logout.js";
-import Jobs from "./app/jobs.js";
-
-const store = new Store();
-const jobs = new Jobs();
 
 export default function App($app) {
-    // (new Proxy('serviceworker.js'))
 
-    const list = new NoteListComponent.NoteList();
+    let eventSourcedMessages;
 
-    const $notes = $app.querySelector('.notes');
-    const $editor = $app.querySelector('.editor');
+    const store = window.localStorage;
+    if (!store) {
+        throw new Error('localStorage not available')
+    }
 
-    NoteEditorComponent.mount($editor, list, store)
-    NoteListComponent.mount($notes, list, store)
-    LoginComponent.mount($app, jobs);
-    LogoutComponent.mount($app, jobs);
+    document.addEventListener('user-logged-in', e => {
+        fetch(`/api/users.php?logged_in_user_id=${store.getItem('currentUserId')}`).then( response => {
+            if (response.status === 200) {
+                return  response.text();
+            }
+            throw new Error('could not fetch data');
+        })
+            .then(json => {
+                const userList = new UserListComponent.UserList()
+                UserListComponent.mount(document.querySelector('.contacts-box'),userList.fromJSON(json))
+            }).catch(error => {});
+    });
 
-    document.addEventListener('fetch-notes', async _ => {
-        const json = await store.getItem('notes');
+    document.dispatchEvent(new CustomEvent('user-logged-in'));
 
-        if (json) {
-            list.fromJSON(json);
+
+
+    document.addEventListener('user-selected', e => {
+        fetch(`/api/messages.php?sender_id=${store.getItem('currentUserId')}&receiver_id=${e.detail}`).then( response => {
+            if (response.status === 200) {
+                return  response.text();
+            }
+            throw new Error('could not fetch data');
+        })
+            .then(json => {
+                const messageList = new MessageListComponent.MessageList()
+                MessageListComponent.mount(document.querySelector('.chat-box'),messageList.fromJSON(json))
+                document.querySelector('.chat-box').scrollTop = 999999;
+            });
+    });
+
+    document.addEventListener('start-stream',e =>{
+
+        if ( eventSourcedMessages instanceof EventSource)
+        {
+            eventSourcedMessages.close();
         }
 
-        document.dispatchEvent(new CustomEvent('render-notes'));
+        eventSourcedMessages = new EventSource(`/api/messages_event_source.php?sender_id=${store.getItem('currentUserId')}&receiver_id=${e.detail}`)
+
+        eventSourcedMessages.onmessage = function(event) {
+            const serializedMessage = JSON.parse(event.data)
+
+            const lastMessage = document.querySelector(`div[data-message-id="${event.lastEventId}"]`);
+
+            if ( lastMessage)
+            {
+                return;
+            }
+
+            let message = new MessageComponent.Message(
+                serializedMessage.id,
+                serializedMessage.text,
+                serializedMessage.sender_id,
+                serializedMessage.receiver_id,
+                new Date(serializedMessage.createdAt)
+            )
+            MessageComponent.mount(document.querySelector('.chat-box'),message)
+            document.querySelector('.chat-box').scrollTop = 999999;
+        }
     });
 
-    document.addEventListener('render-notes', _ => {
-        NoteListComponent.mount($notes, list, store)
-    });
+
+
+
+
+    FrameComponent.mount(document.querySelector('.chat-app'))
+    LoginComponent.mount(document.querySelector('.app'));
+    LogoutComponent.mount(document.querySelector('.app'));
 
 }
 

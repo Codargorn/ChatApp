@@ -37,9 +37,12 @@ const senderTemplate =  `
  * @param {Message} message
  */
 function mount($element, message){
-
+    const store = window.localStorage;
+    if (!store) {
+        throw new Error('localStorage not available')
+    }
 let $message = "";
-if (message.senderId != localStorage.getItem('currentUserId'))
+if (message.senderId != store.getItem('currentUserId'))
 {
     $message = createElementFromHTML(receiverTemplate);
 
@@ -57,6 +60,14 @@ else
 }
 
 function createTimeString(message){
+
+    const is_chrome = navigator.userAgent.indexOf('Chrome') > -1;
+    const is_safari = navigator.userAgent.indexOf("Safari") > -1;
+
+    if (!is_chrome && is_safari){
+        return "Use another browser to see the time ffs"
+    }
+
     const dt = message.createdAt;
     let hours = dt.getHours() ;
     const AmOrPm = hours >= 12 ? 'PM' : 'AM';

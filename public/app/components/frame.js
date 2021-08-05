@@ -42,6 +42,11 @@ function mount($element){
     const $frame = createElementFromHTML(template);
     let receiverId = ""
 
+    const store = window.localStorage;
+    if (!store) {
+        throw new Error('localStorage not available')
+    }
+
     document.addEventListener('user-selected',e =>{
             receiverId = e.detail;
 
@@ -51,7 +56,7 @@ function mount($element){
         const submitForm = new FormData();
         let $textInput = $frame.querySelector('.text-input')
         submitForm.append('text', $textInput.value)
-        submitForm.append('sender_id', localStorage.getItem('currentUserId'))
+        submitForm.append('sender_id', store.getItem('currentUserId'))
         submitForm.append('receiver_id',receiverId)
 
         if($textInput.value.length !== 0){

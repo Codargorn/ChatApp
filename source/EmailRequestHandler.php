@@ -1,6 +1,5 @@
 <?php
 
-
 namespace ChatApi;
 
 
@@ -11,10 +10,10 @@ use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
 
 /**
- * Class RegistrationRequestHandler
+ * Class EmailRequestHandler
  * @package ChatApi
  */
-final class RegistrationRequestHandler
+final class EmailRequestHandler
 {
 
     /** @var ProvidesUsers */
@@ -29,7 +28,6 @@ final class RegistrationRequestHandler
         $this->userRepository = $userRepository;
     }
 
-
     /**
      * @param RepresentsRequest $request
      * @return HttpResponse
@@ -37,6 +35,8 @@ final class RegistrationRequestHandler
      */
     public function handle(RepresentsRequest $request): HttpResponse
     {
+
+
         if ($request->getMethod() !== 'POST') {
             (new HttpResponder())->respond(
                 new HttpResponse(
@@ -56,10 +56,8 @@ final class RegistrationRequestHandler
         }
 
         $email = $request->getPostParams()['email'] ?? null;
-        $password = $request->getPostParams()['password'] ?? null;
-        $username = $request->getPostParams()['username'] ?? null;
 
-        if (!$email || $password || $username ) {
+        if (!$email) {
             (new HttpResponder())->respond(
                 new HttpResponse(
                     StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
@@ -69,7 +67,7 @@ final class RegistrationRequestHandler
                     json_encode(
                         [
                             'success' => false,
-                            'error' => 'email, password or username not specified'
+                            'error' => 'email not specified'
                         ],
                         JSON_THROW_ON_ERROR
                     )
@@ -77,27 +75,8 @@ final class RegistrationRequestHandler
             );
         }
 
+        if ($this->userRepository->existsWithEmail($email)) {
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
-        {
-
-            return new HttpResponse(
-                StatusCodeInterface::STATUS_OK,
-                [
-                    'Cache-Control' => 'no-cache'
-                ],
-                json_encode(
-                    [
-                        'success' => false,
-                        'error' => 'email not valid'
-                    ],
-                    JSON_THROW_ON_ERROR
-                )
-            );
-        }
-
-        if ($this->userRepository->existsWithEmail($email))
-        {
             return new HttpResponse(
                 StatusCodeInterface::STATUS_OK,
                 [
@@ -113,26 +92,6 @@ final class RegistrationRequestHandler
             );
         }
 
-        if (strlen($password) < 9)
-        {
-
-            return new HttpResponse(
-                StatusCodeInterface::STATUS_OK,
-                [
-                    'Cache-Control' => 'no-cache'
-                ],
-                json_encode(
-                    [
-                        'success' => false,
-                        'error' => 'password too short'
-                    ],
-                    JSON_THROW_ON_ERROR
-                )
-            );
-        }
-
-        $this->userRepository->createNewUser($email, $password, $username);
-
         return new HttpResponse(
             StatusCodeInterface::STATUS_OK,
             [
@@ -141,10 +100,11 @@ final class RegistrationRequestHandler
             json_encode(
                 [
                     'success' => true,
-                    'message' => 'User stored'
+                    'message' => "email doesn't exist"
                 ],
                 JSON_THROW_ON_ERROR
             )
         );
+
     }
 }

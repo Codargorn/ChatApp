@@ -20,7 +20,7 @@ class FakeRequest implements \ChatApi\Contracts\RepresentsRequest
     {
         return [
             'email' => 'test.@excample.com',
-            'password' => '123456789',
+            'password' => null,
             'username' => 'Tester, Gerd',
         ];
     }
@@ -54,7 +54,7 @@ class FakeRepository implements \ChatApi\Contracts\ProvidesUsers
 $request = new \ChatApi\HttpRequest();
 $handler = new \ChatApi\RegistrationRequestHandler(new FakeRepository());
 $response =     $handler->handle(new FakeRequest());
-
+print_r($response);
 if ($response->getStatusCode() === 200)
 {
     $body = json_decode($response->getBody(), true);

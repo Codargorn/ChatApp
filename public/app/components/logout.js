@@ -3,6 +3,11 @@
  * @param  {HTMLElement} $app
  */
 function mount($app) {
+    const store = window.localStorage;
+    if (!store) {
+        throw new Error('localStorage not available')
+    }
+
     const $logout = $app.querySelector('.signout');
 
     $logout.addEventListener('click', _ => {
@@ -16,7 +21,8 @@ function mount($app) {
                     $login.style.display = 'block';
 
                     $app.querySelector('.content').style.display = 'none';
-                    localStorage.clear()
+                    document.querySelector('.contacts-box').innerHTML = "";
+                    store.clear()
 
                 }
             });
