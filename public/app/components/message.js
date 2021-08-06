@@ -61,8 +61,13 @@ else
 
 function createTimeString(message){
 
-    const is_chrome = navigator.userAgent.indexOf('Chrome') > -1;
-    const is_safari = navigator.userAgent.indexOf("Safari") > -1;
+    const navigatorAgent = window.navigator.userAgent;
+    if (!navigatorAgent) {
+        throw new Error('User Agent not available')
+    }
+
+    const is_chrome = navigatorAgent.indexOf('Chrome') > -1;
+    const is_safari = navigatorAgent.indexOf("Safari") > -1;
 
     if (!is_chrome && is_safari){
         return "Use another browser to see the time ffs"

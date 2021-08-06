@@ -38,8 +38,8 @@ final class EmailRequestHandler
 
 
         if ($request->getMethod() !== 'POST') {
-            (new HttpResponder())->respond(
-                new HttpResponse(
+
+            return  new HttpResponse(
                     StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
                     [
                         'Cache-Control' => 'no-cache'
@@ -51,15 +51,15 @@ final class EmailRequestHandler
                         ],
                         JSON_THROW_ON_ERROR
                     )
-                )
-            );
+                );
+
         }
 
         $email = $request->getPostParams()['email'] ?? null;
 
         if (!$email) {
-            (new HttpResponder())->respond(
-                new HttpResponse(
+
+               return new HttpResponse(
                     StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
                     [
                         'Cache-Control' => 'no-cache'
@@ -71,8 +71,8 @@ final class EmailRequestHandler
                         ],
                         JSON_THROW_ON_ERROR
                     )
-                )
-            );
+                );
+
         }
 
         if ($this->userRepository->existsWithEmail($email)) {

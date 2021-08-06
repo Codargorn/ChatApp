@@ -14,6 +14,7 @@ $userRepository = new UserRepository($pdo);
 
 $request = new \ChatApi\HttpRequest();
 $handler = new \ChatApi\RegistrationRequestHandler($userRepository);
+
 (new HttpResponder())->respond(
     $handler->handle($request)
 );

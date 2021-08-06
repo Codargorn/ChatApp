@@ -3,13 +3,14 @@
 
 namespace ChatApi;
 
+use ChatApi\Contracts\ProvidesMessage;
 use DateTime;
 
 /**
  * Class Message
  * @package ChatApi
  */
-final class Message
+final class Message implements ProvidesMessage
 {
     /**@var int */
     private $id;
@@ -26,8 +27,6 @@ final class Message
     /** @var int */
     private $receiverId;
 
-
-
     /**
      * Message constructor.
      * @param int $id
@@ -43,6 +42,24 @@ final class Message
         $this->createdAt = $createdAt;
         $this->senderId = $senderId;
         $this->receiverId = $receiverId;
+    }
+
+    /**
+     * @param string $text
+     * @param DateTime $createdAt
+     * @param int $senderId
+     * @param int $receiverId
+     * @return static
+     */
+    public static function new(string $text, DateTime $createdAt, int $senderId, int $receiverId):self
+    {
+        return new self(
+            0,
+            $text,
+            $createdAt,
+            $senderId,
+            $receiverId
+        );
     }
 
     /**

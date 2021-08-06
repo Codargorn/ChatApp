@@ -2,11 +2,13 @@
 
 namespace ChatApi;
 
+use ChatApi\Contracts\ProvidesSession;
+
 /**
  * Class Session
  * @package ChatApi
  */
-final class Session
+final class Session implements ProvidesSession
 {
 
     /**

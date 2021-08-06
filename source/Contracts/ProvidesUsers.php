@@ -9,6 +9,12 @@ namespace ChatApi\Contracts;
 interface ProvidesUsers
 {
     /**
+     * @param int $loggedInUserId
+     * @return array[]
+     */
+    public function getUsers(int $loggedInUserId): array;
+
+    /**
      * @param string $email
      * @param string $password
      * @param string $username
@@ -20,4 +26,11 @@ interface ProvidesUsers
      * @return bool
      */
     public function existsWithEmail(string $email): bool;
+
+    /**
+     * @param string $email
+     * @param string $password
+     * @return int
+     */
+    public function authenticate(string $email, string $password): int;
 }

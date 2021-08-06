@@ -1,0 +1,97 @@
+<?php
+
+
+namespace ChatApi;
+
+
+use ChatApi\Contracts\ProvidesSession;
+use ChatApi\Contracts\ProvidesUsers;
+
+use ChatApi\Contracts\RepresentsRequest;
+use Fig\Http\Message\StatusCodeInterface;
+use JsonException;
+
+/**
+ * Class UserRequestHandler
+ * @package ChatApi
+ */
+final class UserRequestHandler
+{
+    /** @var ProvidesSession */
+    private $session;
+
+    /** @var ProvidesUsers */
+    private $userRepository;
+
+
+    /**
+     * UserRequestHandler constructor.
+     * @param ProvidesSession $session
+     * @param ProvidesUsers $userRepository
+     */
+    public function __construct(ProvidesSession $session, ProvidesUsers $userRepository)
+    {
+        $this->session = $session;
+        $this->userRepository = $userRepository;
+    }
+
+
+    /**
+     * @param RepresentsRequest $request
+     * @return HttpResponse
+     * @throws JsonException
+     */
+    public function handle(RepresentsRequest $request): HttpResponse
+    {
+        if ($request->getMethod() !== 'GET') {
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'method not allowed'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+        }
+
+        if ($this->session->get('user_id') === null) {
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_UNAUTHORIZED,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'not logged in'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+        }
+
+
+        $loggedInUserId = (int)$request->getQueryParams()['logged_in_user_id'];
+
+        return new HttpResponse(
+            StatusCodeInterface::STATUS_OK,
+            [
+                'Cache-Control' => 'no-cache'
+            ],
+            json_encode(
+                $this->userRepository->getUsers($loggedInUserId),
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+    }
+
+}
+
+
+

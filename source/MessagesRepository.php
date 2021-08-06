@@ -3,6 +3,7 @@
 
 namespace ChatApi;
 
+use ChatApi\Contracts\ProvidesMessages;
 use DateTime;
 use Exception;
 use PDO;
@@ -13,7 +14,7 @@ use RuntimeException;
  * Class MessagesRepository
  * @package ChatApi
  */
-final class MessagesRepository
+final class MessagesRepository implements ProvidesMessages
 {
     /** @var PDO */
     private $pdo;

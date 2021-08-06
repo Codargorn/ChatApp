@@ -38,8 +38,8 @@ final class RegistrationRequestHandler
     public function handle(RepresentsRequest $request): HttpResponse
     {
         if ($request->getMethod() !== 'POST') {
-            (new HttpResponder())->respond(
-                new HttpResponse(
+
+             return new HttpResponse(
                     StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
                     [
                         'Cache-Control' => 'no-cache'
@@ -51,8 +51,8 @@ final class RegistrationRequestHandler
                         ],
                         JSON_THROW_ON_ERROR
                     )
-                )
-            );
+                );
+
         }
 
         $email = $request->getPostParams()['email'] ?? null;
@@ -60,8 +60,7 @@ final class RegistrationRequestHandler
         $username = $request->getPostParams()['username'] ?? null;
 
         if (!$email || $password || $username ) {
-            (new HttpResponder())->respond(
-                new HttpResponse(
+                return  new HttpResponse(
                     StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
                     [
                         'Cache-Control' => 'no-cache'
@@ -73,8 +72,8 @@ final class RegistrationRequestHandler
                         ],
                         JSON_THROW_ON_ERROR
                     )
-                )
-            );
+                );
+
         }
 
 
