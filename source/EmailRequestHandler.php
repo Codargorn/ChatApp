@@ -4,10 +4,11 @@ namespace ChatApi;
 
 
 use ChatApi\Contracts\ProvidesUsers;
-
 use ChatApi\Contracts\RepresentsRequest;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
+use PDOException;
+use Throwable;
 
 /**
  * Class EmailRequestHandler
@@ -39,27 +40,28 @@ final class EmailRequestHandler
 
         if ($request->getMethod() !== 'POST') {
 
-            return  new HttpResponse(
-                    StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
                     [
-                        'Cache-Control' => 'no-cache'
+                        'success' => false,
+                        'error' => 'method not allowed'
                     ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => 'method not allowed'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
-                );
+                    JSON_THROW_ON_ERROR
+                )
+            );
 
         }
 
-        $email = $request->getPostParams()['email'] ?? null;
+        try {
+            $email = $request->getPostParams()['email'] ?? null;
 
-        if (!$email) {
+            if (!$email) {
 
-               return new HttpResponse(
+                return new HttpResponse(
                     StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
                     [
                         'Cache-Control' => 'no-cache'
@@ -73,9 +75,24 @@ final class EmailRequestHandler
                     )
                 );
 
-        }
+            }
 
-        if ($this->userRepository->existsWithEmail($email)) {
+            if ($this->userRepository->existsWithEmail($email)) {
+
+                return new HttpResponse(
+                    StatusCodeInterface::STATUS_OK,
+                    [
+                        'Cache-Control' => 'no-cache'
+                    ],
+                    json_encode(
+                        [
+                            'success' => false,
+                            'error' => 'email already exists'
+                        ],
+                        JSON_THROW_ON_ERROR
+                    )
+                );
+            }
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_OK,
@@ -84,27 +101,61 @@ final class EmailRequestHandler
                 ],
                 json_encode(
                     [
-                        'success' => false,
-                        'error' => 'email already exists'
+                        'success' => true,
+                        'message' => "email doesn't exist"
                     ],
                     JSON_THROW_ON_ERROR
                 )
             );
-        }
 
-        return new HttpResponse(
-            StatusCodeInterface::STATUS_OK,
-            [
-                'Cache-Control' => 'no-cache'
-            ],
-            json_encode(
+        } catch (PDOException $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
                 [
-                    'success' => true,
-                    'message' => "email doesn't exist"
+                    'Cache-Control' => 'no-cache'
                 ],
-                JSON_THROW_ON_ERROR
-            )
-        );
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'email could not be checked'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
 
+        } catch (JsonException $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'wrong payload'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        } catch (Throwable $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => $exception->getMessage()
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        }
     }
 }

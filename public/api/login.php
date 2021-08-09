@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php /** @noinspection PhpFullyQualifiedNameUsageInspection */
+declare(strict_types=1);
 
 use ChatApi\HttpResponder;
 use ChatApi\MysqlConnection;

@@ -2,7 +2,9 @@
 
 use ChatApi\HttpResponder;
 use ChatApi\MysqlConnection;
+use ChatApi\Session;
 use ChatApi\UserRepository;
+use ChatApi\UserRequestHandler;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -13,8 +15,8 @@ $pdo = MysqlConnection::fromConfig($settings);
 $userRepository = new UserRepository($pdo);
 
 $request = new \ChatApi\HttpRequest();
-$session = new \ChatApi\Session();
-$handler = new \ChatApi\UserRequestHandler($session, $userRepository);
+$session = new Session();
+$handler = new UserRequestHandler($session, $userRepository);
 (new HttpResponder())->respond(
     $handler->handle($request)
 );

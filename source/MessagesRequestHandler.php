@@ -1,37 +1,41 @@
 <?php
 
+
 namespace ChatApi;
 
+
+use ChatApi\Contracts\ProvidesMessages;
 use ChatApi\Contracts\ProvidesSession;
-use ChatApi\Contracts\ProvidesUsers;
+
 
 use ChatApi\Contracts\RepresentsRequest;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
+use PDOException;
 use Throwable;
 
 /**
- * Class LoginRequestHandler
+ * Class UserRequestHandler
  * @package ChatApi
  */
-final class LoginRequestHandler
+final class MessagesRequestHandler
 {
     /** @var ProvidesSession */
     private $session;
 
-    /** @var ProvidesUsers */
-    private $userRepository;
 
+    /** @var ProvidesMessages */
+    private $messagesRepository;
 
     /**
-     * LoginRequestHandler constructor.
+     * UserRequestHandler constructor.
      * @param ProvidesSession $session
-     * @param ProvidesUsers $userRepository
+     * @param ProvidesMessages $messagesRepository
      */
-    public function __construct(ProvidesSession $session, ProvidesUsers $userRepository)
+    public function __construct(ProvidesSession $session, ProvidesMessages $messagesRepository)
     {
         $this->session = $session;
-        $this->userRepository = $userRepository;
+        $this->messagesRepository = $messagesRepository;
     }
 
 
@@ -42,23 +46,24 @@ final class LoginRequestHandler
      */
     public function handle(RepresentsRequest $request): HttpResponse
     {
-        if (($request->getMethod() === 'GET') && $this->session->get('user_id') !== null) {
+        if ($this->session->get('user_id') === null) {
+
             return new HttpResponse(
-                StatusCodeInterface::STATUS_OK,
+                StatusCodeInterface::STATUS_UNAUTHORIZED,
                 [
                     'Cache-Control' => 'no-cache'
                 ],
                 json_encode(
                     [
-                        'success' => true,
-                        'error' => 'logged in'
+                        'success' => false,
+                        'error' => 'not logged in'
                     ],
                     JSON_THROW_ON_ERROR
                 )
             );
-        }
 
-        if ($request->getMethod() !== 'POST') {
+        }
+        if ($request->getMethod() !== 'GET') {
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
@@ -75,44 +80,58 @@ final class LoginRequestHandler
             );
         }
 
-        $email = $request->getPostParams()['email'] ?? null;
-        $password = $request->getPostParams()['password'] ?? null;
-
-        if (!$email || !$password) {
-
-            return new HttpResponse(
-                StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
-                [
-                    'Cache-Control' => 'no-cache'
-                ],
-                json_encode(
-                    [
-                        'success' => false,
-                        'error' => 'email or password not specified'
-                    ],
-                    JSON_THROW_ON_ERROR
-                )
-            );
-        }
 
         try {
-            $userId = $this->userRepository->authenticate(
-                $email,
-                $password
-            );
 
-            $this->session->set('user_id', $userId);
-
+            $senderId = (int)$request->getQueryParams()['sender_id']; //?? null;
+            $receiverId = (int)$request->getQueryParams()['receiver_id']; //?? null;
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_OK,
                 [
                     'Cache-Control' => 'no-cache'
                 ],
+                json_encode(array_map(
+                    static function (Message $message): array {
+                        return [
+                            'id' => $message->getId(),
+                            'text' => $message->getText(),
+                            'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
+                            'sender_id' => $message->getSenderId(),
+                            'receiver_id' => $message->getReceiverId()
+                        ];
+                    },
+                    $this->messagesRepository->getMessages($senderId, $receiverId)),
+                    JSON_THROW_ON_ERROR
+                )
+            );
+        } catch (PDOException $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
                 json_encode(
                     [
-                        'success' => true,
-                        'user_id' => $userId
+                        'success' => false,
+                        'error' => 'messages could not be sent'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        } catch (JsonException $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'wrong payload'
                     ],
                     JSON_THROW_ON_ERROR
                 )
@@ -121,23 +140,21 @@ final class LoginRequestHandler
         } catch (Throwable $exception) {
 
             return new HttpResponse(
-                StatusCodeInterface::STATUS_UNAUTHORIZED,
+                StatusCodeInterface::STATUS_BAD_REQUEST,
                 [
                     'Cache-Control' => 'no-cache'
                 ],
                 json_encode(
                     [
                         'success' => false,
-                        'error' => 'user could not ne authenticated'
+                        'error' => $exception->getMessage()
                     ],
                     JSON_THROW_ON_ERROR
                 )
             );
+
         }
     }
 }
-
-
-
 
 

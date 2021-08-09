@@ -30,4 +30,5 @@ MYSQL_DATA_DIRECTORY="$PROJECT_DIRECTORY/.docker/mariadb/data"
   -v "${PROJECT_DIRECTORY}":/var/www/html \
   -v "${MYSQL_DATA_DIRECTORY}":/var/lib/mysql \
   -w /var/www/html \
+  -e TZ=Europe/Berlin \
   ${DOCKER_IMAGE_TAG}

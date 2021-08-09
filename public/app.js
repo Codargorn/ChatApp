@@ -15,52 +15,50 @@ export default function App($app) {
     }
 
     document.addEventListener('user-logged-in', e => {
-        fetch(`/api/users.php?logged_in_user_id=${store.getItem('currentUserId')}`).then( response => {
+        fetch(`/api/users.php?logged_in_user_id=${store.getItem('currentUserId')}`).then(response => {
             if (response.status === 200) {
-                return  response.text();
+                return response.text();
             }
             throw new Error('could not fetch data');
         })
             .then(json => {
                 const userList = new UserListComponent.UserList()
-                UserListComponent.mount(document.querySelector('.contacts-box'),userList.fromJSON(json))
-            }).catch(error => {});
+                UserListComponent.mount(document.querySelector('.contacts-box'), userList.fromJSON(json))
+            }).catch(error => {
+        });
     });
 
     document.dispatchEvent(new CustomEvent('user-logged-in'));
 
 
-
     document.addEventListener('user-selected', e => {
-        fetch(`/api/messages.php?sender_id=${store.getItem('currentUserId')}&receiver_id=${e.detail}`).then( response => {
+        fetch(`/api/messages.php?sender_id=${store.getItem('currentUserId')}&receiver_id=${e.detail}`).then(response => {
             if (response.status === 200) {
-                return  response.text();
+                return response.text();
             }
             throw new Error('could not fetch data');
         })
             .then(json => {
                 const messageList = new MessageListComponent.MessageList()
-                MessageListComponent.mount(document.querySelector('.chat-box'),messageList.fromJSON(json))
+                MessageListComponent.mount(document.querySelector('.chat-box'), messageList.fromJSON(json))
                 document.querySelector('.chat-box').scrollTop = 999999;
             });
     });
 
-    document.addEventListener('start-stream',e =>{
+    document.addEventListener('start-stream', e => {
 
-        if ( eventSourcedMessages instanceof EventSource)
-        {
+        if (eventSourcedMessages instanceof EventSource) {
             eventSourcedMessages.close();
         }
 
         eventSourcedMessages = new EventSource(`/api/messages_event_source.php?sender_id=${store.getItem('currentUserId')}&receiver_id=${e.detail}`)
 
-        eventSourcedMessages.onmessage = function(event) {
+        eventSourcedMessages.onmessage = function (event) {
             const serializedMessage = JSON.parse(event.data)
 
             const lastMessage = document.querySelector(`div[data-message-id="${event.lastEventId}"]`);
 
-            if ( lastMessage)
-            {
+            if (lastMessage) {
                 return;
             }
 
@@ -71,13 +69,10 @@ export default function App($app) {
                 serializedMessage.receiver_id,
                 new Date(serializedMessage.createdAt)
             )
-            MessageComponent.mount(document.querySelector('.chat-box'),message)
+            MessageComponent.mount(document.querySelector('.chat-box'), message)
             document.querySelector('.chat-box').scrollTop = 999999;
         }
     });
-
-
-
 
 
     FrameComponent.mount(document.querySelector('.chat-app'))

@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 
 use ChatApi\HttpResponder;
+use ChatApi\MessageRequestHandler;
 use ChatApi\MessagesRepository;
 use ChatApi\MysqlConnection;
-use ChatApi\UserRepository;
+use ChatApi\Session;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -14,8 +15,8 @@ $pdo = MysqlConnection::fromConfig($settings);
 $messagesRepository = new MessagesRepository($pdo);
 
 $request = new \ChatApi\HttpRequest();
-$session = new \ChatApi\Session();
-$handler = new \ChatApi\MessageRequestHandler($session,$messagesRepository);
+$session = new Session();
+$handler = new MessageRequestHandler($session,$messagesRepository);
 (new HttpResponder())->respond(
     $handler->handle($request)
 );

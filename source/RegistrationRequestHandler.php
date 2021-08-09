@@ -5,10 +5,11 @@ namespace ChatApi;
 
 
 use ChatApi\Contracts\ProvidesUsers;
-
 use ChatApi\Contracts\RepresentsRequest;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
+use PDOException;
+use Throwable;
 
 /**
  * Class RegistrationRequestHandler
@@ -39,28 +40,29 @@ final class RegistrationRequestHandler
     {
         if ($request->getMethod() !== 'POST') {
 
-             return new HttpResponse(
-                    StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
                     [
-                        'Cache-Control' => 'no-cache'
+                        'success' => false,
+                        'error' => 'method not allowed'
                     ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => 'method not allowed'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
-                );
+                    JSON_THROW_ON_ERROR
+                )
+            );
 
         }
 
-        $email = $request->getPostParams()['email'] ?? null;
-        $password = $request->getPostParams()['password'] ?? null;
-        $username = $request->getPostParams()['username'] ?? null;
+        try {
+            $email = $request->getPostParams()['email'] ?? null;
+            $password = $request->getPostParams()['password'] ?? null;
+            $username = $request->getPostParams()['username'] ?? null;
 
-        if (!$email || $password || $username ) {
-                return  new HttpResponse(
+            if (!$email || $password || $username) {
+                return new HttpResponse(
                     StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
                     [
                         'Cache-Control' => 'no-cache'
@@ -74,11 +76,60 @@ final class RegistrationRequestHandler
                     )
                 );
 
-        }
+            }
 
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
-        {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+                return new HttpResponse(
+                    StatusCodeInterface::STATUS_OK,
+                    [
+                        'Cache-Control' => 'no-cache'
+                    ],
+                    json_encode(
+                        [
+                            'success' => false,
+                            'error' => 'email not valid'
+                        ],
+                        JSON_THROW_ON_ERROR
+                    )
+                );
+            }
+
+            if ($this->userRepository->existsWithEmail($email)) {
+                return new HttpResponse(
+                    StatusCodeInterface::STATUS_OK,
+                    [
+                        'Cache-Control' => 'no-cache'
+                    ],
+                    json_encode(
+                        [
+                            'success' => false,
+                            'error' => 'email already exists'
+                        ],
+                        JSON_THROW_ON_ERROR
+                    )
+                );
+            }
+
+            if (strlen($password) < 9) {
+
+                return new HttpResponse(
+                    StatusCodeInterface::STATUS_OK,
+                    [
+                        'Cache-Control' => 'no-cache'
+                    ],
+                    json_encode(
+                        [
+                            'success' => false,
+                            'error' => 'password too short'
+                        ],
+                        JSON_THROW_ON_ERROR
+                    )
+                );
+            }
+
+            $this->userRepository->createNewUser($email, $password, $username);
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_OK,
@@ -87,63 +138,59 @@ final class RegistrationRequestHandler
                 ],
                 json_encode(
                     [
-                        'success' => false,
-                        'error' => 'email not valid'
+                        'success' => true,
+                        'message' => 'User stored'
                     ],
                     JSON_THROW_ON_ERROR
                 )
             );
-        }
+        } catch (PDOException $exception) {
 
-        if ($this->userRepository->existsWithEmail($email))
-        {
             return new HttpResponse(
-                StatusCodeInterface::STATUS_OK,
+                StatusCodeInterface::STATUS_BAD_REQUEST,
                 [
                     'Cache-Control' => 'no-cache'
                 ],
                 json_encode(
                     [
                         'success' => false,
-                        'error' => 'email already exists'
+                        'error' => 'user could not be stored'
                     ],
                     JSON_THROW_ON_ERROR
                 )
             );
-        }
 
-        if (strlen($password) < 9)
-        {
+        } catch (JsonException $exception) {
 
             return new HttpResponse(
-                StatusCodeInterface::STATUS_OK,
+                StatusCodeInterface::STATUS_BAD_REQUEST,
                 [
                     'Cache-Control' => 'no-cache'
                 ],
                 json_encode(
                     [
                         'success' => false,
-                        'error' => 'password too short'
+                        'error' => 'wrong payload'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        } catch (Throwable $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => $exception->getMessage()
                     ],
                     JSON_THROW_ON_ERROR
                 )
             );
         }
-
-        $this->userRepository->createNewUser($email, $password, $username);
-
-        return new HttpResponse(
-            StatusCodeInterface::STATUS_OK,
-            [
-                'Cache-Control' => 'no-cache'
-            ],
-            json_encode(
-                [
-                    'success' => true,
-                    'message' => 'User stored'
-                ],
-                JSON_THROW_ON_ERROR
-            )
-        );
     }
 }

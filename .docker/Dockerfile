@@ -10,7 +10,8 @@ RUN apt-get update && apt-get -y install \
     rsync \
     nginx \
     default-mysql-server \
-    redis
+    redis \
+    tzdata
 
 RUN apt-get update && apt-get -y install \
     php7.3 \

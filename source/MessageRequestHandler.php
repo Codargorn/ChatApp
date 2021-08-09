@@ -4,10 +4,9 @@
 namespace ChatApi;
 
 
-use ChatApi\Contracts\ProvidesMessage;
 use ChatApi\Contracts\ProvidesMessages;
 use ChatApi\Contracts\ProvidesSession;
-use ChatApi\Contracts\ProvidesUsers;
+
 
 use ChatApi\Contracts\RepresentsRequest;
 use DateTime;
@@ -49,35 +48,34 @@ final class MessageRequestHandler
     public function handle(RepresentsRequest $request): HttpResponse
     {
         if ($this->session->get('user_id') === null) {
-            (new HttpResponder())->respond(
-                new \ChatApi\HttpResponse(
-                    StatusCodeInterface::STATUS_UNAUTHORIZED,
-                    ['Cache-Control' => 'no-cache'],
-                    json_encode(
-                        ['success' => false,
-                            'error' => 'not logged in'],
-                        JSON_THROW_ON_ERROR
-                    )
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_UNAUTHORIZED,
+                ['Cache-Control' => 'no-cache'],
+                json_encode(
+                    ['success' => false,
+                        'error' => 'not logged in'],
+                    JSON_THROW_ON_ERROR
                 )
             );
         }
 
         if ($request->getMethod() !== 'POST') {
-            (new HttpResponder())->respond(
-                new HttpResponse(
-                    StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
                     [
-                        'Cache-Control' => 'no-cache'
+                        'success' => false,
+                        'error' => 'method not allowed'
                     ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => 'method not allowed'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
+                    JSON_THROW_ON_ERROR
                 )
             );
+
         }
         try {
 
@@ -92,69 +90,69 @@ final class MessageRequestHandler
                 $receiverId
             ));
 
-            (new HttpResponder())->respond(
-                new HttpResponse(
-                    StatusCodeInterface::STATUS_OK,
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_OK,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
                     [
-                        'Cache-Control' => 'no-cache'
+                        'success' => true,
+                        'message' => 'message successfully stored'
                     ],
-                    json_encode(
-                        [
-                            'success' => true,
-                            'message' => 'message successfully stored'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
+                    JSON_THROW_ON_ERROR
                 )
             );
+
         } catch (PDOException $exception) {
-            (new HttpResponder())->respond(
-                new HttpResponse(
-                    StatusCodeInterface::STATUS_BAD_REQUEST,
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
                     [
-                        'Cache-Control' => 'no-cache'
+                        'success' => false,
+                        'error' => 'message could not be written'
                     ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => 'message could not be written'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
+                    JSON_THROW_ON_ERROR
                 )
             );
+
         } catch (JsonException $exception) {
-            (new HttpResponder())->respond(
-                new HttpResponse(
-                    StatusCodeInterface::STATUS_BAD_REQUEST,
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
                     [
-                        'Cache-Control' => 'no-cache'
+                        'success' => false,
+                        'error' => 'wrong payload'
                     ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => 'wrong payload'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
+                    JSON_THROW_ON_ERROR
                 )
             );
+
         } catch (Throwable $exception) {
-            (new HttpResponder())->respond(
-                new HttpResponse(
-                    StatusCodeInterface::STATUS_BAD_REQUEST,
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
                     [
-                        'Cache-Control' => 'no-cache'
+                        'success' => false,
+                        'error' => $exception->getMessage()
                     ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => $exception->getMessage()
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
+                    JSON_THROW_ON_ERROR
                 )
             );
+
         }
     }
 

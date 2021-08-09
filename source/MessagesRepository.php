@@ -3,9 +3,11 @@
 
 namespace ChatApi;
 
+use ChatApi\Contracts\ProvidesMessage;
 use ChatApi\Contracts\ProvidesMessages;
 use DateTime;
 use Exception;
+use LogicException;
 use PDO;
 use RuntimeException;
 
@@ -31,7 +33,7 @@ final class MessagesRepository implements ProvidesMessages
     /**
      * @param Message $message
      */
-    public function add(Message $message): void
+    public function add(ProvidesMessage $message): void
     {
         $statement = $this->pdo->prepare(
             "INSERT INTO messages(text, created_at, sender_id, receiver_id) VALUES (:text, :created_at, :sender_id, :receiver_id)"
@@ -86,7 +88,7 @@ final class MessagesRepository implements ProvidesMessages
      * @return Message
      * @throws Exception
      */
-    public function lastMessages(int $senderId, int $receiverId): Message
+    public function lastMessages(int $senderId, int $receiverId): ProvidesMessage
     {
         $statement = $this->pdo->prepare(
             'SELECT *
@@ -105,7 +107,7 @@ final class MessagesRepository implements ProvidesMessages
         $record = $statement->fetch(PDO::FETCH_ASSOC);
 
         if (!$record) {
-            throw new \LogicException('no message found');
+            throw new LogicException('no message found');
         }
         return new Message(
             (int)$record['id'],

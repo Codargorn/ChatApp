@@ -10,6 +10,8 @@ use ChatApi\Contracts\ProvidesUsers;
 use ChatApi\Contracts\RepresentsRequest;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
+use PDOException;
+use Throwable;
 
 /**
  * Class UserRequestHandler
@@ -75,23 +77,77 @@ final class UserRequestHandler
             );
         }
 
+        try {
 
-        $loggedInUserId = (int)$request->getQueryParams()['logged_in_user_id'];
+            $loggedInUserId = (int)$request->getQueryParams()['logged_in_user_id'];
 
-        return new HttpResponse(
-            StatusCodeInterface::STATUS_OK,
-            [
-                'Cache-Control' => 'no-cache'
-            ],
-            json_encode(
-                $this->userRepository->getUsers($loggedInUserId),
-                JSON_THROW_ON_ERROR
-            )
-        );
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_OK,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    $this->userRepository->getUsers($loggedInUserId),
+                    JSON_THROW_ON_ERROR
+                )
+            );
+        } catch (PDOException $exception) {
 
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'Users could not be read'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        } catch (JsonException $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'wrong payload'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        } catch (Throwable $exception) {
+
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_BAD_REQUEST,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => $exception->getMessage()
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+
+        }
     }
 
 }
+
+
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ChatApi\EmailRequestHandler;
 use ChatApi\HttpResponder;
 use ChatApi\MysqlConnection;
 use ChatApi\UserRepository;
@@ -13,7 +14,7 @@ $pdo = MysqlConnection::fromConfig($settings);
 $userRepository = new UserRepository($pdo);
 
 $request = new \ChatApi\HttpRequest();
-$handler = new \ChatApi\EmailRequestHandler($userRepository);
+$handler = new EmailRequestHandler($userRepository);
 
 (new HttpResponder())->respond(
     $handler->handle($request)
