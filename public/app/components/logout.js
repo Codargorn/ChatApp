@@ -1,12 +1,11 @@
+import Store from "../store.js";
+
 /**
  *
  * @param  {HTMLElement} $app
  */
 function mount($app) {
-    const store = window.localStorage;
-    if (!store) {
-        throw new Error('localStorage not available')
-    }
+    const store = new Store()
 
     const $logout = $app.querySelector('.signout');
 
@@ -22,10 +21,13 @@ function mount($app) {
 
                     $app.querySelector('.content').style.display = 'none';
                     document.querySelector('.contacts-box').innerHTML = "";
-                    store.clear()
+                    store.clear();
 
                 }
             });
+    })
+    $app.querySelector('.settings').addEventListener('click', _=>{
+        window.location = "./settings.html"
     })
 }
 

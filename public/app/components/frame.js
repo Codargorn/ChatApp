@@ -1,4 +1,5 @@
 import {createElementFromHTML} from "../html.js";
+import Store from "../store.js";
 
 const template = `
 <div class="py-5 px-4">
@@ -42,10 +43,7 @@ function mount($element){
     const $frame = createElementFromHTML(template);
     let receiverId = ""
 
-    const store = window.localStorage;
-    if (!store) {
-        throw new Error('localStorage not available')
-    }
+  const store = new Store()
 
     document.addEventListener('user-selected',e =>{
             receiverId = e.detail;
@@ -64,11 +62,11 @@ function mount($element){
             .then(response => response.json())
             .then( body => {
                 if(body.success){
-                    console.log('funzt');
                     $textInput.value = "";
                 }
             })
     }});
+
 
     $element.appendChild($frame);
 

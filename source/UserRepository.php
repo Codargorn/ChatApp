@@ -54,6 +54,11 @@ final class UserRepository implements ProvidesUsers
         throw new RuntimeException('password wrong');
     }
 
+    /**
+     * @param string $email
+     * @param string $password
+     * @param string $username
+     */
     public function createNewUser(string $email, string $password, string $username): void
     {
         $statement = $this->pdo->prepare(
@@ -68,6 +73,10 @@ final class UserRepository implements ProvidesUsers
         ]);
     }
 
+    /**
+     * @param string $email
+     * @return bool
+     */
     public function existsWithEmail(string $email): bool
     {
         $statement = $this->pdo->prepare(
@@ -78,14 +87,26 @@ final class UserRepository implements ProvidesUsers
         ]);
         return (bool)$statement->fetchColumn();
     }
-    public function getUsers(int $loggedInUserId): array
+
+    /**
+     * @return array
+     */
+    public function getUsers(): array
     {
-        $statement = $this->pdo->prepare(
-            "SELECT id, username FROM users WHERE NOT id = :loggedInUserId"
+        $statement = $this->pdo->query(
+            "SELECT id, username FROM users"
         );
-        $statement->execute([
-           'loggedInUserId' => $loggedInUserId
-        ]);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function assignImage(int $userId, int $imageId): void
+    {
+        $statement = $this->pdo->prepare('UPDATE users SET image_id = :imageId WHERE id = :userId');
+
+        $statement->execute([
+            ':imageId' => $imageId,
+            ':userId' => $userId
+        ]);
     }
 }

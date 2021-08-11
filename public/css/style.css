@@ -24,7 +24,9 @@ body {
 }
 
 .contacts-box,
-.chat-box {
+.chat-box,
+.category-box,
+.settings-box{
     height: 510px;
     overflow-y: scroll;
 }
@@ -51,4 +53,13 @@ input:-webkit-autofill:focus
 {
     background-color: #3B3B3B !important;
     -webkit-box-shadow: 0 0 0 30px #3B3B3B inset !important;
+}
+
+.image-preview{
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+
+    object-fit: cover;
+    object-position: center right;
 }

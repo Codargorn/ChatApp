@@ -51,7 +51,7 @@ final class Message implements ProvidesMessage
      * @param int $receiverId
      * @return static
      */
-    public static function new(string $text, DateTime $createdAt, int $senderId, int $receiverId):self
+    public static function new(string $text, DateTime $createdAt, int $senderId, int $receiverId): self
     {
         return new self(
             0,

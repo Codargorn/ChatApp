@@ -4,12 +4,16 @@ function Store() {
         throw new Error('localStorage not available')
     }
 
-    this.setItem = async function (key, value) {
+    this.setItem = function (key, value) {
         store.setItem(key, value)
     }
 
-    this.getItem = async function (key) {
+    this.getItem = function (key) {
         return store.getItem(key);
+    }
+
+    this.clear = function () {
+        store.clear()
     }
 }
 

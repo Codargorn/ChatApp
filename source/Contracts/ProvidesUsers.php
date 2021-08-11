@@ -9,10 +9,9 @@ namespace ChatApi\Contracts;
 interface ProvidesUsers
 {
     /**
-     * @param int $loggedInUserId
      * @return array[]
      */
-    public function getUsers(int $loggedInUserId): array;
+    public function getUsers(): array;
 
     /**
      * @param string $email

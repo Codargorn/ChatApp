@@ -1,14 +1,12 @@
-<?php
+<?php declare(strict_types=1);
+
+namespace ChatApi\RequestHandler;
 
 
-namespace ChatApi;
-
-
-use ChatApi\Contracts\ProvidesMessages;
 use ChatApi\Contracts\ProvidesSession;
-
-
+use ChatApi\Contracts\ProvidesUsers;
 use ChatApi\Contracts\RepresentsRequest;
+use ChatApi\HttpResponse;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
 use PDOException;
@@ -18,24 +16,24 @@ use Throwable;
  * Class UserRequestHandler
  * @package ChatApi
  */
-final class MessagesRequestHandler
+final class UserRequestHandler
 {
     /** @var ProvidesSession */
     private $session;
 
+    /** @var ProvidesUsers */
+    private $userRepository;
 
-    /** @var ProvidesMessages */
-    private $messagesRepository;
 
     /**
      * UserRequestHandler constructor.
      * @param ProvidesSession $session
-     * @param ProvidesMessages $messagesRepository
+     * @param ProvidesUsers $userRepository
      */
-    public function __construct(ProvidesSession $session, ProvidesMessages $messagesRepository)
+    public function __construct(ProvidesSession $session, ProvidesUsers $userRepository)
     {
         $this->session = $session;
-        $this->messagesRepository = $messagesRepository;
+        $this->userRepository = $userRepository;
     }
 
 
@@ -46,25 +44,7 @@ final class MessagesRequestHandler
      */
     public function handle(RepresentsRequest $request): HttpResponse
     {
-        if ($this->session->get('user_id') === null) {
-
-            return new HttpResponse(
-                StatusCodeInterface::STATUS_UNAUTHORIZED,
-                [
-                    'Cache-Control' => 'no-cache'
-                ],
-                json_encode(
-                    [
-                        'success' => false,
-                        'error' => 'not logged in'
-                    ],
-                    JSON_THROW_ON_ERROR
-                )
-            );
-
-        }
         if ($request->getMethod() !== 'GET') {
-
             return new HttpResponse(
                 StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
                 [
@@ -80,28 +60,30 @@ final class MessagesRequestHandler
             );
         }
 
+        if ($this->session->get('user_id') === null) {
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_UNAUTHORIZED,
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
+                json_encode(
+                    [
+                        'success' => false,
+                        'error' => 'not logged in'
+                    ],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+        }
 
         try {
-
-            $senderId = (int)$request->getQueryParams()['sender_id']; //?? null;
-            $receiverId = (int)$request->getQueryParams()['receiver_id']; //?? null;
-
             return new HttpResponse(
                 StatusCodeInterface::STATUS_OK,
                 [
                     'Cache-Control' => 'no-cache'
                 ],
-                json_encode(array_map(
-                    static function (Message $message): array {
-                        return [
-                            'id' => $message->getId(),
-                            'text' => $message->getText(),
-                            'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
-                            'sender_id' => $message->getSenderId(),
-                            'receiver_id' => $message->getReceiverId()
-                        ];
-                    },
-                    $this->messagesRepository->getMessages($senderId, $receiverId)),
+                json_encode(
+                    $this->userRepository->getUsers(),
                     JSON_THROW_ON_ERROR
                 )
             );
@@ -115,7 +97,7 @@ final class MessagesRequestHandler
                 json_encode(
                     [
                         'success' => false,
-                        'error' => 'messages could not be sent'
+                        'error' => 'Users could not be read'
                     ],
                     JSON_THROW_ON_ERROR
                 )
@@ -155,6 +137,13 @@ final class MessagesRequestHandler
 
         }
     }
+
 }
+
+
+
+
+
+
 
 

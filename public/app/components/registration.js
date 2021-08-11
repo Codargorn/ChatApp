@@ -23,6 +23,10 @@ const template = `
       <input type="password" class="form-control" id="passwordrepeat" autoComplete="off">
       <label id="passwordrepeatvalidate"></label>
     </div>
+    <div class="mb-3">
+    <input class="imageupload" type="file" accept="image/jpg">
+    <img class="profileimage" src="" alt="did not work"> 
+    </div>
     <button class="btn btn-primary signin">Create Account</button>
   </div>`
 
@@ -43,6 +47,7 @@ function mount($element) {
     const $passwordRepeat = $registration.querySelector('#passwordrepeat');
     const $passwordRepeatValidate = $registration.querySelector('#passwordrepeatvalidate');
     const $signin = $registration.querySelector('.signin');
+    const $imageupload = $registration.querySelector('.imageupload')
 
 
     $emailInput.addEventListener('input', _ => {
@@ -124,6 +129,21 @@ function mount($element) {
             console.error(error);
         });
     })
+
+    $imageupload.addEventListener('change', e => {
+        const submitForm = new FormData();
+        submitForm.append('image', e.currentTarget.files[0]);
+        fetch('/api/image.php', {method: 'POST', body: submitForm})
+            .then(response => response.json())
+            .then(body => {
+                if (body.success) {
+                    console.log('went well')
+                }
+            })
+    })
+
+    //$registration.querySelector('.profileimage').src = URL.createObjectURL(e.currentTarget.files[0])
+    //console.log(URL.createObjectURL(e.currentTarget.files[0]))
 
 
     $element.appendChild($registration);

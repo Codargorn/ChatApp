@@ -3,7 +3,6 @@
 namespace ChatApi;
 
 
-
 use ChatApi\Contracts\RepresentsRequest;
 
 /**
@@ -39,6 +38,14 @@ final class HttpRequest implements RepresentsRequest
     public function getServerParams(): array
     {
         return $_SERVER ?? [];
+    }
+
+    /**
+     * @return array
+     */
+    public function getUploadedFiles(): array
+    {
+        return $_FILES ?? [];
     }
 
     /**

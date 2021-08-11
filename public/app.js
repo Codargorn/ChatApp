@@ -4,15 +4,13 @@ import MessageListComponent from "./app/components/messagelist.js";
 import FrameComponent from "./app/components/frame.js";
 import LoginComponent from "./app/components/login.js";
 import LogoutComponent from "./app/components/logout.js";
+import Store from "./app/store.js";
 
 export default function App($app) {
 
     let eventSourcedMessages;
 
-    const store = window.localStorage;
-    if (!store) {
-        throw new Error('localStorage not available')
-    }
+    const store = new Store()
 
     document.addEventListener('user-logged-in', e => {
         fetch(`/api/users.php?logged_in_user_id=${store.getItem('currentUserId')}`).then(response => {

@@ -12,13 +12,20 @@ class User {
     }
 }
 
+
+
 // language=HTML
-const template = `
+const template = (user) => `
     <a href="#"
        class="list-group-item list-group-item-action list-group-item-light rounded-0 border-top"
        data-user-id="">
+        <div class="media">
+        <img src="/api/image.php?user_id=${user.id}" width="50" height="50" class="rounded-circle">
+            <div class="media-body ml-4">
         <div class="d-flex align-items-center justify-content-between mb-1">
-            <h6 class="mb-0 name"></h6>
+             <h6 class="mb-0 name"></h6>
+        </div>
+        </div>
         </div>
     </a>`;
 
@@ -27,7 +34,7 @@ const template = `
  * @param {User} user
  */
 function mount($element, user) {
-    const $user = createElementFromHTML(template);
+    const $user = createElementFromHTML(template(user));
 
 
     $user.querySelector('.name').innerHTML = user.name;

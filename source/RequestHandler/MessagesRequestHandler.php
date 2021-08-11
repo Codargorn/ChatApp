@@ -1,25 +1,24 @@
-<?php
+<?php declare(strict_types=1);
 
-
-namespace ChatApi;
+namespace ChatApi\RequestHandler;
 
 
 use ChatApi\Contracts\ProvidesMessages;
 use ChatApi\Contracts\ProvidesSession;
-
-
 use ChatApi\Contracts\RepresentsRequest;
-use DateTime;
+use ChatApi\HttpResponse;
+use ChatApi\Message;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
 use PDOException;
 use Throwable;
 
+
 /**
  * Class UserRequestHandler
  * @package ChatApi
  */
-final class MessageRequestHandler
+final class MessagesRequestHandler
 {
     /** @var ProvidesSession */
     private $session;
@@ -51,16 +50,20 @@ final class MessageRequestHandler
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_UNAUTHORIZED,
-                ['Cache-Control' => 'no-cache'],
+                [
+                    'Cache-Control' => 'no-cache'
+                ],
                 json_encode(
-                    ['success' => false,
-                        'error' => 'not logged in'],
+                    [
+                        'success' => false,
+                        'error' => 'not logged in'
+                    ],
                     JSON_THROW_ON_ERROR
                 )
             );
-        }
 
-        if ($request->getMethod() !== 'POST') {
+        }
+        if ($request->getMethod() !== 'GET') {
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
@@ -75,36 +78,33 @@ final class MessageRequestHandler
                     JSON_THROW_ON_ERROR
                 )
             );
-
         }
+
+
         try {
 
-            $text = $request->getPostParams()['text'] ?? null;
-            $senderId = (int)$request->getPostParams()['sender_id'];
-            $receiverId = (int)$request->getPostParams()['receiver_id'];
-
-            $this->messagesRepository->add(Message::new(
-                $text,
-                new DateTime(),
-                $senderId,
-                $receiverId
-            ));
-
+            $senderId = (int)$request->getQueryParams()['sender_id']; //?? null;
+            $receiverId = (int)$request->getQueryParams()['receiver_id']; //?? null;
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_OK,
                 [
                     'Cache-Control' => 'no-cache'
                 ],
-                json_encode(
-                    [
-                        'success' => true,
-                        'message' => 'message successfully stored'
-                    ],
+                json_encode(array_map(
+                    static function (Message $message): array {
+                        return [
+                            'id' => $message->getId(),
+                            'text' => $message->getText(),
+                            'createdAt' => $message->getCreatedAt()->format('Y-m-d H:i:s'),
+                            'sender_id' => $message->getSenderId(),
+                            'receiver_id' => $message->getReceiverId()
+                        ];
+                    },
+                    $this->messagesRepository->getMessages($senderId, $receiverId)),
                     JSON_THROW_ON_ERROR
                 )
             );
-
         } catch (PDOException $exception) {
 
             return new HttpResponse(
@@ -115,7 +115,7 @@ final class MessageRequestHandler
                 json_encode(
                     [
                         'success' => false,
-                        'error' => 'message could not be written'
+                        'error' => 'messages could not be sent'
                     ],
                     JSON_THROW_ON_ERROR
                 )
@@ -155,7 +155,6 @@ final class MessageRequestHandler
 
         }
     }
-
-
 }
+
 

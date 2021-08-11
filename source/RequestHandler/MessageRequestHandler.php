@@ -1,33 +1,44 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace ChatApi;
+namespace ChatApi\RequestHandler;
 
 
-use ChatApi\Contracts\ProvidesUsers;
+use ChatApi\Contracts\ProvidesMessages;
+use ChatApi\Contracts\ProvidesSession;
 use ChatApi\Contracts\RepresentsRequest;
+use ChatApi\HttpResponse;
+use ChatApi\Message;
+use DateTime;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
 use PDOException;
 use Throwable;
 
+
 /**
- * Class EmailRequestHandler
+ * Class UserRequestHandler
  * @package ChatApi
  */
-final class EmailRequestHandler
+final class MessageRequestHandler
 {
+    /** @var ProvidesSession */
+    private $session;
 
-    /** @var ProvidesUsers */
-    private $userRepository;
+
+    /** @var ProvidesMessages */
+    private $messagesRepository;
 
     /**
-     * RegistrationRequestHandler constructor.
-     * @param ProvidesUsers $userRepository
+     * UserRequestHandler constructor.
+     * @param ProvidesSession $session
+     * @param ProvidesMessages $messagesRepository
      */
-    public function __construct(ProvidesUsers $userRepository)
+    public function __construct(ProvidesSession $session, ProvidesMessages $messagesRepository)
     {
-        $this->userRepository = $userRepository;
+        $this->session = $session;
+        $this->messagesRepository = $messagesRepository;
     }
+
 
     /**
      * @param RepresentsRequest $request
@@ -36,7 +47,18 @@ final class EmailRequestHandler
      */
     public function handle(RepresentsRequest $request): HttpResponse
     {
+        if ($this->session->get('user_id') === null) {
 
+            return new HttpResponse(
+                StatusCodeInterface::STATUS_UNAUTHORIZED,
+                ['Cache-Control' => 'no-cache'],
+                json_encode(
+                    ['success' => false,
+                        'error' => 'not logged in'],
+                    JSON_THROW_ON_ERROR
+                )
+            );
+        }
 
         if ($request->getMethod() !== 'POST') {
 
@@ -55,44 +77,23 @@ final class EmailRequestHandler
             );
 
         }
-
         try {
-            $email = $request->getPostParams()['email'] ?? null;
 
-            if (!$email) {
+            $text = $request->getPostParams()['text'] ?? null;
+            $senderId = (int)$request->getPostParams()['sender_id'];
+            $receiverId = (int)$request->getPostParams()['receiver_id'];
 
-                return new HttpResponse(
-                    StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
-                    [
-                        'Cache-Control' => 'no-cache'
-                    ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => 'email not specified'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
-                );
-
+            if ($senderId === (int)$this->session->get('user_id')) {
+                $receiverId = $senderId;
             }
 
-            if ($this->userRepository->existsWithEmail($email)) {
+            $this->messagesRepository->add(Message::new(
+                $text,
+                new DateTime(),
+                $senderId,
+                $receiverId
+            ));
 
-                return new HttpResponse(
-                    StatusCodeInterface::STATUS_OK,
-                    [
-                        'Cache-Control' => 'no-cache'
-                    ],
-                    json_encode(
-                        [
-                            'success' => false,
-                            'error' => 'email already exists'
-                        ],
-                        JSON_THROW_ON_ERROR
-                    )
-                );
-            }
 
             return new HttpResponse(
                 StatusCodeInterface::STATUS_OK,
@@ -102,7 +103,7 @@ final class EmailRequestHandler
                 json_encode(
                     [
                         'success' => true,
-                        'message' => "email doesn't exist"
+                        'message' => 'message successfully stored'
                     ],
                     JSON_THROW_ON_ERROR
                 )
@@ -118,7 +119,7 @@ final class EmailRequestHandler
                 json_encode(
                     [
                         'success' => false,
-                        'error' => 'email could not be checked'
+                        'error' => 'message could not be written'
                     ],
                     JSON_THROW_ON_ERROR
                 )
@@ -158,4 +159,7 @@ final class EmailRequestHandler
 
         }
     }
+
+
 }
+

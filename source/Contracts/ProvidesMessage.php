@@ -6,9 +6,9 @@ namespace ChatApi\Contracts;
 use DateTime;
 
 /**
-* Interface ProvidesMessage
-* @package ChatApi\Contracts
-*/
+ * Interface ProvidesMessage
+ * @package ChatApi\Contracts
+ */
 interface ProvidesMessage
 {
     /**
@@ -29,12 +29,10 @@ interface ProvidesMessage
     public function getSenderId(): int;
 
 
-
     /**
      * @return int
      */
     public function getReceiverId(): int;
-
 
 
     /**

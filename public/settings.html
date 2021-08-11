@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to Chat 24</title>
+    <title>Settings</title>
     <link href="/css/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link href="/css/fontawesome-free-5.15.3-web/css/all.css" rel="stylesheet">
@@ -12,17 +12,16 @@
 </head>
 <body>
 <div class="app container">
-    <div class="content" style ="display: none">
-        <button class="signout btn btn-dark" style="top: 5px; right: 20px; position: absolute">Log out</button>
-        <button class=" fas fa-cog settings btn btn-dark" style="top: 5px; right: 120px; position: absolute"></button>
-        <div class="chat-app"></div>
+    <div class="content">
+        <div class="settings"></div>
     </div>
 </div>
 
 <script type="module">
-import App from "./app.js";
+    import Sett from "./app.js";
+    import SettingsComponent from "./app/components/settings.js";
 
-new App(document.querySelector('.app'));
+    new SettingsComponent.mount((document.querySelector('.app')));
 
 
 

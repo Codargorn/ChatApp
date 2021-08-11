@@ -17,7 +17,6 @@ interface ProvidesMessages
     public function add(ProvidesMessage $message): void;
 
 
-
     /**
      * @param int $senderId
      * @param int $receiverId
@@ -25,7 +24,6 @@ interface ProvidesMessages
      * @throws Exception
      */
     public function getMessages(int $senderId, int $receiverId): array;
-
 
 
     /**

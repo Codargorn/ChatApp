@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace ChatApi;
+namespace ChatApi\RequestHandler;
 
 use ChatApi\Contracts\ProvidesSession;
-
 use ChatApi\Contracts\RepresentsRequest;
+use ChatApi\HttpResponse;
 use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
 use PDOException;

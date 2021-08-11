@@ -1,4 +1,5 @@
 import {createElementFromHTML} from "../html.js";
+import Store from "../store.js";
 
 class Message {
     constructor(id, text, senderId, receiverId, createdAt = new Date()) {
@@ -39,10 +40,8 @@ const senderTemplate = `
  * @param {Message} message
  */
 function mount($element, message) {
-    const store = window.localStorage;
-    if (!store) {
-        throw new Error('localStorage not available')
-    }
+    const store = new Store()
+
     let $message = "";
     if (message.senderId != store.getItem('currentUserId')) {
         $message = createElementFromHTML(receiverTemplate);

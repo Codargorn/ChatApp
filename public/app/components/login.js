@@ -1,5 +1,6 @@
 // language=HTML
 import {createElementFromHTML} from "../html.js";
+import Store from "../store.js";
 
 const template = `
     <div class="login">
@@ -40,9 +41,10 @@ function mount($app) {
             .then(response => response.json())
             .then(body => {
                 if (body.success) {
+                    const store = new Store()
                     $login.style.display = 'none';
                     $app.querySelector('.content').style.display = 'block';
-                    localStorage.setItem('currentUserId',body.user_id)
+                    store.setItem('currentUserId',body.user_id)
                     document.dispatchEvent(new CustomEvent('user-logged-in', {
 
                     }));
